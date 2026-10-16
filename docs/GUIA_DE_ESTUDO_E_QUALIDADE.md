@@ -21,6 +21,8 @@ pergunta ──► [busca] ──► [ferramenta?] ──► [limiar] ──► 
 | 5 | Geração e recusa | O modelo só vê trechos; recusa em **duas camadas** (limiar + modelo); fonte obrigatória; trechos escapados contra injeção. | [05](aprendizado/05-geracao-e-recusa.md) |
 | 6 | Fidelidade e ferramenta | Números da resposta checados **por código**; conta ("5 barbeiros") feita por ferramenta, não pelo modelo. | [06](aprendizado/06-fidelidade-e-ferramenta.md) |
 | 7 | Avaliação de respostas | Conjuntos de **ajuste e validação**, cassete e **gate no CI**. | [07](aprendizado/07-avaliacao-de-respostas.md) |
+| 8 | API | Limite por IP **antes** da validação, teto diário, prazo por pedido, logs sem texto nem IP; o uvicorn burlava o limite por padrão. | [08](aprendizado/08-api.md) |
+| 9 | Docker | Imagem sem chave, sem root, só leitura, limites de recurso; testes da imagem que rodam sem Docker. | [09](aprendizado/09-docker.md) |
 
 ## 2. Comandos (rode você mesmo)
 
@@ -39,6 +41,16 @@ python scripts\check_secrets.py                        # segredos e dados pessoa
 .venv\Scripts\python -m eval.run_answers --record      # regrava o cassete (usa a chave e a cota)
 ```
 
+## 2b. Docker: usar e limpar sem deixar rastro
+
+```bash
+docker compose up -d --build        # sobe (publica so em 127.0.0.1:8000; nao reinicia sozinho)
+docker compose down -v              # desliga e apaga container, rede e volume do projeto
+docker image rm rag-barberproject:local   # apaga a imagem (se refaz em segundos)
+```
+
+O compose nunca monta pastas do seu computador. Esses comandos so mexem em coisas com o nome deste projeto.
+
 ## 3. Checklist de qualidade (antes de mesclar qualquer PR)
 
 - [ ] `pytest`, `ruff` e `mypy` verdes (o CI repete isso).
@@ -47,6 +59,7 @@ python scripts\check_secrets.py                        # segredos e dados pessoa
 - [ ] Mudou um **preço**? Altere o `plans.json` **e** o `planos.md` (um teste barra a divergência) e regrave o cassete.
 - [ ] O piso só **sobe** sem justificativa. Para baixar, explique o motivo no PR.
 - [ ] Nova pergunta de avaliação? Vai para **ajuste** se você vai usá-la para corrigir algo; **validação** só se ninguém a olhou antes de ajustar.
+- [ ] Mexeu em `Dockerfile`, `.dockerignore` ou `docker-compose.yml`? `tests/test_container.py` confere o que dá sem Docker; **construa a imagem** e rode a lista "a verificar" do caderno 09.
 - [ ] Atualizou um caderno de `docs/aprendizado` se o comportamento mudou.
 
 ## 4. O que cada trava protege (e o que NÃO protege)
@@ -60,13 +73,15 @@ python scripts\check_secrets.py                        # segredos e dados pessoa
 | fonte obrigatória e validada | resposta sem lastro | resposta citando fonte real mas dizendo algo que ela não diz |
 | checagem de números | valor, dia ou quantidade inventados; confirmação de preço falso | afirmação **sem número** ("tem suporte 24h"); número por extenso |
 | escape dos trechos | texto da base fechando a marca e virando instrução | injeção na **pergunta** que o modelo decida obedecer (mitigada pelas regras, não eliminada) |
+| limites da API (IP, teto diário, corpo, prazo) | esgotar a cota do Gemini, corpo gigante, thread presa | ataque distribuído por muitos IPs reais; **instância reiniciada zera os contadores** |
+| container endurecido | invasor com root, escrita no disco, escalada de privilégio | segredo mal configurado no servidor; tráfego direto à porta (o proxy deve ser o único caminho) |
 | gate com cassete | piorar o **código** | o Gemini mudar de comportamento (regrave de tempos em tempos) |
 
 ## 5. Números de referência (16/10/2026)
 
 | medida | valor |
 |---|---|
-| testes automatizados | 136, sem rede |
+| testes automatizados | 193, sem rede |
 | busca (25 perguntas): significado / palavras / híbrida | 88% / 72% / 88% no acerto@1; 96% / 88% / **100%** no acerto@3 |
 | respostas, ajuste | **20/20** |
 | respostas, validação | **25/26** (falha conhecida: v20, "personalizar cores e logo") |

@@ -1,0 +1,23 @@
+# Segredos e estado local: NUNCA entram na imagem (a imagem pode ir para um registry).
+.env
+.env.*
+!.env.example
+.index/
+.venv/
+*.egg-info/
+
+# Nao e necessario para rodar
+.git/
+.github/
+.githooks/
+tests/
+eval/
+scripts/
+docs/
+**/__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+README.md
+Dockerfile
+docker-compose.yml
