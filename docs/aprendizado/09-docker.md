@@ -18,7 +18,7 @@ Tudo que entra na imagem pode acabar num registry ou em outra máquina. Por isso
 | lista de dependências lida do `pyproject.toml` | fonte única; evita um `requirements.txt` que diverge |
 | dependências antes do código no Dockerfile | só refaz a camada pesada quando as dependências mudam |
 | `read_only`, `cap_drop: ALL`, `no-new-privileges` | reduz o que um invasor consegue fazer |
-| `mem_limit`, `cpus`, `pids_limit` | um pedido malicioso não derruba o servidor inteiro (o droplet divide recursos com o Multi) |
+| `mem_limit`, `cpus`, `pids_limit` | um pedido malicioso não derruba o servidor inteiro (o servidor divide recursos com o Multi) |
 | porta publicada só em `127.0.0.1` | expor para a internet é decisão consciente, via proxy reverso |
 | base fixada por digest | o mesmo build gera a mesma imagem; uma tag não pode ser trocada sem você ver |
 | `HEALTHCHECK` | o Docker reinicia o container se `/health` parar de responder |

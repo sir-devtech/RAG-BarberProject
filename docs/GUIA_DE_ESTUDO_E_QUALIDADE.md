@@ -23,6 +23,7 @@ pergunta ──► [busca] ──► [ferramenta?] ──► [limiar] ──► 
 | 7 | Avaliação de respostas | Conjuntos de **ajuste e validação**, cassete e **gate no CI**. | [07](aprendizado/07-avaliacao-de-respostas.md) |
 | 8 | API | Limite por IP **antes** da validação, teto diário, prazo por pedido, logs sem texto nem IP; o uvicorn burlava o limite por padrão. | [08](aprendizado/08-api.md) |
 | 9 | Docker | Imagem sem chave, sem root, só leitura, limites de recurso; testes da imagem que rodam sem Docker. | [09](aprendizado/09-docker.md) |
+| 10 | Fechamento | **Sem demo hospedada**: o servidor tinha pouca memória livre e a hospedagem gratuita exigia plano pago. Demonstração offline + roteiro de vídeo. | [10](aprendizado/10-decisao-sem-demo-publica.md) |
 
 ## 2. Comandos (rode você mesmo)
 
@@ -38,6 +39,7 @@ python scripts\check_secrets.py                        # segredos e dados pessoa
 .venv\Scripts\python -m scripts.ask --debug "pergunta" # pipeline completo, mostra os trechos entregues
 .venv\Scripts\python -m eval.run_eval --sweep          # avaliação da BUSCA (25 perguntas)
 .venv\Scripts\python -m eval.run_answers --verbose     # avaliação das RESPOSTAS (offline, do cassete)
+.venv\Scripts\python -m scripts.demo                 # demonstração offline em 9 cenas (sem chave)
 .venv\Scripts\python -m eval.run_answers --record      # regrava o cassete (usa a chave e a cota)
 ```
 
@@ -81,7 +83,7 @@ O compose nunca monta pastas do seu computador. Esses comandos so mexem em coisa
 
 | medida | valor |
 |---|---|
-| testes automatizados | 193, sem rede |
+| testes automatizados | 200, sem rede |
 | busca (25 perguntas): significado / palavras / híbrida | 88% / 72% / 88% no acerto@1; 96% / 88% / **100%** no acerto@3 |
 | respostas, ajuste | **20/20** |
 | respostas, validação | **25/26** (falha conhecida: v20, "personalizar cores e logo") |
@@ -94,6 +96,7 @@ O compose nunca monta pastas do seu computador. Esses comandos so mexem em coisa
 2. **As perguntas e os gabaritos são meus**, não de clientes reais.
 3. **v20** falha: palavras repetidas em vários chunks deixam o BM25 sem destaque e a busca por significado não acerta. Hipótese descartada: "listas longas diluem o vetor" (6 perguntas sobre outros itens da mesma lista passaram).
 4. **Agenda ao vivo** (horário disponível) não existe: a base é só texto público. Seria uma ferramenta que consulta a API pública do Sir Barber (ainda não construída).
+4b. **Não há demo hospedada.** Detalhes e o que faltaria para publicar com segurança estão no caderno 10.
 5. O assistente só conhece a base **`platform`**; a base de uma barbearia específica ainda não foi escrita.
 6. O gate prova que o **código** não piorou; regravar o cassete é o que mostra se o **Gemini** mudou.
 

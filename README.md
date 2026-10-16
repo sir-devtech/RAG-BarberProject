@@ -2,7 +2,17 @@
 
 Assistente em **Python** que responde dúvidas sobre o **Sir Barber** (SaaS multi-loja de agendamento para barbearias), usando RAG com o Gemini em nível gratuito.
 
-> **Status:** etapa 9 de 10. A API e a imagem Docker estão prontas e verificadas; a demo pública ainda não está no ar.
+> **Status:** concluído. **Não há demo hospedada** (decisão documentada em [`docs/aprendizado/10`](docs/aprendizado/10-decisao-sem-demo-publica.md)); em vez disso há uma **demonstração offline** que qualquer pessoa reproduz sem chave e sem internet.
+
+## Ver funcionando em 1 minuto (sem chave, sem internet)
+
+```bash
+pip install -e ".[dev]"
+python -m scripts.demo      # 9 cenas: conta por ferramenta, premissa falsa, recusas, manipulação e uma falha conhecida
+python -m eval.run_answers --verbose   # a avaliação das respostas, reproduzida do cassete
+```
+
+O roteiro do vídeo de demonstração está em [`docs/ROTEIRO_DO_VIDEO.md`](docs/ROTEIRO_DO_VIDEO.md).
 
 ## O que ele faz
 
@@ -43,7 +53,7 @@ python -m venv .venv
 pip install -e ".[dev]"
 cp .env.example .env                   # preencha a chave (o .env nunca vai para o git)
 git config core.hooksPath .githooks    # ativa a barreira contra segredos
-pytest                                 # 190+ testes, sem rede e sem chave
+pytest                                 # 200 testes, sem rede e sem chave
 python -m scripts.ask "quanto custa para 5 barbeiros?"
 python -m app.api.serve                # API em 127.0.0.1:8000
 ```
