@@ -57,3 +57,48 @@ def test_resposta_sem_candidatos_vira_erro() -> None:
 
 def test_repr_nao_vaza_a_chave() -> None:
     assert SEGREDO not in repr(chat_with([], []))
+
+
+def test_prazo_total_interrompe_as_tentativas_em_vez_de_prender_a_thread() -> None:
+    now = [0.0]
+
+    def sleep(seconds: float) -> None:
+        now[0] += seconds  # o tempo "passa" so quando o cliente espera
+
+    calls: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(request)
+        return httpx.Response(503, text="sobrecarregado")
+
+    http = GeminiHttp(
+        SEGREDO,
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+        max_retries=10,
+        sleep=sleep,
+        max_total_seconds=5,
+        clock=lambda: now[0],
+    )
+    with pytest.raises(GeminiError) as err:
+        http.post("/x", {})
+    assert "Tempo limite" in str(err.value) and SEGREDO not in str(err.value)
+    assert len(calls) < 11  # parou antes de esgotar as 10 tentativas
+    assert now[0] <= 5  # nunca espera alem do prazo
+
+
+def test_sem_prazo_o_comportamento_antigo_continua() -> None:
+    calls: list[int] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(1)
+        return httpx.Response(503, text="x")
+
+    http = GeminiHttp(
+        SEGREDO,
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+        max_retries=2,
+        sleep=lambda s: None,
+    )
+    with pytest.raises(GeminiError):
+        http.post("/x", {})
+    assert len(calls) == 3

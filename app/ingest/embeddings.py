@@ -55,8 +55,15 @@ class GeminiEmbedder:
         client: httpx.Client | None = None,
         max_retries: int = 4,
         sleep: Callable[[float], None] = time.sleep,
+        max_total_seconds: float | None = None,
     ) -> None:
-        self._http = GeminiHttp(api_key, client=client, max_retries=max_retries, sleep=sleep)
+        self._http = GeminiHttp(
+            api_key,
+            client=client,
+            max_retries=max_retries,
+            sleep=sleep,
+            max_total_seconds=max_total_seconds,
+        )
         self.model = model
         self.dimensions = dimensions
 
