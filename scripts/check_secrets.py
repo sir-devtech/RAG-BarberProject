@@ -27,9 +27,21 @@ PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("telefone BR", re.compile(r"(?<!\d)\(?\d{2}\)?\s?9\d{4}-?\d{4}(?!\d)")),
     ("caminho de servidor", re.compile(r"(?<![\w.])/opt/[\w.-]+")),
     ("chave SSH", re.compile(r"\bid_(?:ed25519|rsa|ecdsa)\w*")),
+    # Qualquer valor real atribuido a variavel de segredo (pega formatos de chave desconhecidos).
+    (
+        "valor em variavel de segredo",
+        re.compile(
+            r"(?i)\b\w*(?:API_KEY|SECRET|TOKEN|PASSWORD|SSH_KEY)\s*[=:]\s*['\"]?"
+            r"(?!cole-sua-chave-aqui|<|\$\{|\s*$)[^\s'\"#]{8,}"
+        ),
+    ),
     ("e-mail pessoal", re.compile(r"[\w.+-]+@(?:gmail|hotmail|outlook|yahoo)\.com(?:\.br)?")),
 ]
 IPV4 = re.compile(r"(?<![\w.])(?:\d{1,3}\.){3}\d{1,3}(?![\w.])")
+# Arquivos que nunca podem ser versionados, qualquer que seja o conteudo.
+FORBIDDEN_NAMES = re.compile(
+    r"(^|/)(\.env(\.(?!example$)[^/]+)?|[^/]+\.(pem|key|p12|pfx)|id_[a-z0-9_]+)$"
+)
 SKIP_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".pdf", ".npz", ".lock"}
 
 
@@ -53,6 +65,8 @@ def scan_text(text: str, path: str = "<texto>") -> list[Finding]:
 
 
 def scan_file(path: Path) -> list[Finding]:
+    if FORBIDDEN_NAMES.search(path.as_posix()):
+        return [Finding(path.as_posix(), 0, "arquivo de segredo")]
     if path.suffix.lower() in SKIP_SUFFIXES or not path.is_file():
         return []
     try:

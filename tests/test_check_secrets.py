@@ -1,4 +1,6 @@
-from scripts.check_secrets import scan_text
+from pathlib import Path
+
+from scripts.check_secrets import scan_file, scan_text
 
 
 def kinds(text: str) -> set[str]:
@@ -13,7 +15,7 @@ FAKE_IP = ".".join(["203", "0", "113", "7"])
 
 
 def test_detecta_chave_gemini() -> None:
-    assert "chave Google/Gemini" in kinds(f"GEMINI_API_KEY={FAKE_KEY}")
+    assert "chave Google/Gemini" in kinds("GEMINI_API_KEY=" + FAKE_KEY)
 
 
 def test_detecta_dados_pessoais() -> None:
@@ -36,3 +38,20 @@ def test_aceita_local_e_texto_normal() -> None:
 def test_achado_nunca_traz_o_valor() -> None:
     finding = scan_text(f"x {FAKE_KEY}")[0]
     assert FAKE_KEY not in repr(finding)
+
+
+def test_detecta_chave_de_formato_desconhecido() -> None:
+    assert "valor em variavel de segredo" in kinds("GEMINI_API_KEY=" + "x7Qp2Lm9" * 3)
+    assert "valor em variavel de segredo" in kinds("DEPLOY_SSH_KEY: " + "abcd1234efgh")
+
+
+def test_aceita_placeholder_e_referencia_a_segredo() -> None:
+    assert kinds("GEMINI_API_KEY=cole-sua-chave-aqui") == set()
+    assert kinds("DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}") == set()
+    assert kinds("GEMINI_API_KEY=") == set()
+
+
+def test_bloqueia_arquivo_de_segredo_pelo_nome() -> None:
+    for name in [".env", "config/.env.local", "servidor.pem", "id_" + "ed25519"]:
+        assert scan_file(Path(name))[0].kind == "arquivo de segredo", name
+    assert scan_file(Path(".env.example")) == []
