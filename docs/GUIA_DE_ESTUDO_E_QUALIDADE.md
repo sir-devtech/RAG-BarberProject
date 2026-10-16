@@ -98,3 +98,26 @@ python scripts\check_secrets.py                        # segredos e dados pessoa
 ## 8. Como explicar o projeto em 30 segundos
 
 "Assistente RAG multi-loja em Python sobre o meu SaaS: busca híbrida com BM25 e embeddings, ferramenta determinística para o que exige conta, checagem por código de que todo valor da resposta existe nos trechos, e avaliação em conjuntos separados de ajuste e validação, com um gate no CI feito com respostas gravadas. Documentei o que **não** funciona também: uma pergunta falha na validação e eu diagnostiquei a causa em vez de ajustar o sistema a ela."
+
+## 9. Auditoria de segurança do repositório público (16/10/2026)
+
+Repetir antes de qualquer mudança de visibilidade, de divulgar o link ou de grandes mudanças.
+
+| verificação | como | resultado |
+|---|---|---|
+| A chave real aparece em algum commit? | `git grep -F "<chave>"` em cada commit de `git rev-list --all` (sem imprimir a chave) | **0 de 15 commits** |
+| Algum `.env` ou arquivo de chave já foi commitado (mesmo apagado depois)? | `git log --all --name-only` filtrando `.env`, `.pem`, `.key`, `id_*` | nenhum |
+| Detector do projeto no histórico inteiro | `git log --all -p` passado por `scan_text` | 2 achados, ambos **falsos positivos**: um modelo de teste com valor falso montado em tempo de execução |
+| Alertas do GitHub (secret scanning) | `gh api repos/<repo>/secret-scanning/alerts` | 0 |
+| E-mail pessoal nos commits | `git log --all --format='%ae %ce'` | só o e-mail *noreply* |
+| Dados pessoais no texto (usuário do Windows, nome, e-mail) | `git grep` | nenhum |
+| A base de conhecimento tem algo que não é público? | cada recurso e preço comparado com `GET /saas/plans` do site, **sem login** | **tudo já é público** |
+| O repositório privado do Sir Barber é citado? | `git grep` por caminhos e nome do repositório | 1 caminho de arquivo em um caderno (corrigido); a regra "referência ao repositório privado" do detector agora impede que volte |
+| Cassete | busca por `AIza`, `api_key`, `x-goog` + `check_secrets` | limpo; só texto público e vetores |
+
+**Camadas ativas:** hook de pre-commit, CI com gitleaks no histórico, *secret scanning* e *push protection* do GitHub, `main` protegida (só PR com CI verde), Dependabot.
+
+**Riscos que a auditoria NÃO elimina** (para tratar nas etapas de API e demo):
+- A **chave do Gemini** na demo: ficará só em variável de ambiente do servidor; abuso da cota gratuita exige limite por IP e teto diário.
+- A **API pública** vai receber texto de qualquer pessoa: limite de tamanho, sem registrar o texto da pergunta nem o IP completo.
+- Se um dia a chave vazar: revogar no Google AI Studio e criar outra; reescrever o histórico do git **não basta**, porque a chave já estaria copiada.

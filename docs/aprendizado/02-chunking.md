@@ -1,7 +1,7 @@
 # Etapa 2 — Base de conhecimento e chunking
 
 ## O que foi feito
-- `knowledge/platform/`: 4 arquivos markdown com informação **pública** do Sir Barber (planos e preços, teste grátis, recursos, FAQ). Os valores vêm de `server/lib/saas-plans.ts` do Multi, que é a fonte oficial de preços.
+- `knowledge/platform/`: 4 arquivos markdown com informação **pública** do Sir Barber (planos e preços, teste grátis, recursos, FAQ). Os valores e os recursos conferem com a lista de planos que o próprio site já serve ao público (rota `/saas/plans`, sem login).
 - `app/ingest/chunking.py`: divide um markdown em pedaços (*chunks*).
 - `app/ingest/loader.py`: lê `knowledge/<loja>/*.md` e devolve os chunks de **uma** loja.
 - `scripts/show_chunks.py`: mostra na tela como a base foi dividida.

@@ -26,6 +26,11 @@ PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("CPF", re.compile(r"\b\d{3}\.\d{3}\.\d{3}-\d{2}\b")),
     ("telefone BR", re.compile(r"(?<!\d)\(?\d{2}\)?\s?9\d{4}-?\d{4}(?!\d)")),
     ("caminho de servidor", re.compile(r"(?<![\w.])/opt/[\w.-]+")),
+    # Os colchetes impedem a regra de casar com o proprio texto dela.
+    (
+        "referencia ao repositorio privado",
+        re.compile(r"saas-plan[s]|SaasLandin[g]|server/li[b]/|SirBarber-Mult[i]"),
+    ),
     ("chave SSH", re.compile(r"\bid_(?:ed25519|rsa|ecdsa)\w*")),
     # Qualquer valor real atribuido a variavel de segredo (pega formatos de chave desconhecidos).
     (
