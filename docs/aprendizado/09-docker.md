@@ -5,7 +5,7 @@
 - `tests/test_container.py`: 8 garantias sobre a imagem que rodam **sem Docker**, no CI.
 - README final.
 
-> **Status honesto:** os arquivos estão escritos e testados por análise, mas **a imagem ainda não foi construída nem atacada**, porque o Docker Desktop estava fechado nesta sessão. Os itens marcados "a verificar" abaixo só valem depois do build real.
+> **Status:** imagem **construída e atacada** em 16/10/2026 (Docker Desktop, engine 29.x). Resultados na seção "Verificação real".
 
 ## Conceito: a imagem é uma foto do que foi copiado
 Tudo que entra na imagem pode acabar num registry ou em outra máquina. Por isso a regra é **copiar o mínimo**: o código da API e a base de conhecimento. Testes, avaliação, scripts, docs, o `.env`, o `.git` e o `.index` ficam de fora.
@@ -31,13 +31,19 @@ Escrevi no `.dockerignore` a linha `*.md` para não levar o README. Mas a base d
 - **Primeira subida:** gera os vetores da base (22 chamadas ao Gemini em um lote) e grava em `/data`. Se a chave estiver errada, o container cai na subida: é intencional (falhar cedo).
 - **O volume `/data`** guarda só vetores de texto público; não tem dado de usuário.
 
-## A verificar quando o Docker estiver aberto
-- [ ] `docker compose build` termina sem erro e a imagem tem tamanho razoável.
-- [ ] `docker run … id` mostra `uid=10001`, não root.
-- [ ] A imagem **não contém** `.env`, `.git`, `tests` nem a chave (`docker run --rm --entrypoint ls … /app`).
-- [ ] O container `read_only` sobe e consegue gravar em `/data`.
-- [ ] `/health` responde e o `HEALTHCHECK` fica `healthy`.
-- [ ] Um pedido real passa, e o `X-Forwarded-For` falso continua sem burlar o limite.
+## Verificação real (todos os itens da lista original, medidos)
+- [x] `docker compose build` terminou sem erro: imagem de **297 MB**.
+- [x] O processo roda como `uid=10001(app)`, shell `nologin`. Não é root.
+- [x] `/app` contém só `app`, `knowledge` e `pyproject.toml`. **Sem** `.env`, `.git`, `tests`, `eval`, `docs`, `scripts`. O `pyproject.toml` fica porque foi usado para instalar as dependências; não tem segredo.
+- [x] Nenhum arquivo da imagem com formato de chave; nenhuma variável de ambiente de segredo. O único `GPG_KEY` é a chave **pública** de assinatura do Python, da imagem base.
+- [x] Sobe `healthy` em ~8 s. A primeira subida gera os 22 vetores (1 chamada ao Gemini).
+- [x] `read_only`: gravar em `/` e `/app` falha ("Read-only file system"); `/data` e `/tmp` funcionam.
+- [x] **Zero capabilities** (`CapEff` e `CapPrm` = 0), `no-new-privileges` ativo.
+- [x] Limites aplicados: 384 MB, 0,5 CPU, 128 processos. Uso real: **47 MiB**, 17 processos.
+- [x] Os mesmos ataques da etapa 8, contra o container: pergunta real ok; loja inválida 404; `../../etc` 422; corpo de 100 KB 413; `/metrics` e `/docs` 404; IPs falsos no `X-Forwarded-For` **não burlam** o limite (6 válidos, o 7º leva 429); cabeçalhos de segurança presentes; log sem texto de pergunta.
+- [x] O container não alcança a porta 5432 do host (os bancos do Multi ficam isolados).
+
+**Observação sobre o IP:** neste teste todos os pedidos chegam ao container com o mesmo IP (o do gateway do Docker), então o limite vale para o conjunto. É exatamente o risco descrito acima, e é por isso que a etapa 10 precisa de `CLIENT_IP_HEADER`.
 
 ## Como explicar na entrevista (2 frases)
 "Empacotei a API sem a chave dentro da imagem, com usuário sem privilégios, sistema de arquivos só leitura, sem capabilities e com limites de recurso, publicando só em localhost. E escrevi testes que verificam a imagem sem precisar do Docker, porque descobri que um padrão errado no `.dockerignore` poderia deixar a base de conhecimento de fora."

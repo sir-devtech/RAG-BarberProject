@@ -2,7 +2,7 @@
 
 Assistente em **Python** que responde dúvidas sobre o **Sir Barber** (SaaS multi-loja de agendamento para barbearias), usando RAG com o Gemini em nível gratuito.
 
-> **Status:** etapa 9 de 10. A API e a imagem Docker estão prontas; a demo pública ainda não está no ar.
+> **Status:** etapa 9 de 10. A API e a imagem Docker estão prontas e verificadas; a demo pública ainda não está no ar.
 
 ## O que ele faz
 
