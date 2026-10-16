@@ -3,7 +3,7 @@
 Assistente em Python que responde dúvidas de clientes de barbearias do **Sir Barber**
 (SaaS multi-loja de agendamento), usando RAG com Gemini em nível gratuito.
 
-> **Status:** em construção, etapa 7 de 10 (avaliação de respostas e gate de qualidade).
+> **Status:** em construção, etapa 8 de 10 (API com defesas de abuso).
 
 ## O que o projeto vai ter
 

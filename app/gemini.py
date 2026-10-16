@@ -24,17 +24,24 @@ class GeminiHttp:
         client: httpx.Client | None = None,
         max_retries: int = 4,
         sleep: Callable[[float], None] = time.sleep,
+        max_total_seconds: float | None = None,
+        clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self._api_key = api_key
         self._client = client or httpx.Client(timeout=60.0)
         self._max_retries = max_retries
         self._sleep = sleep
+        # Prazo total de UM pedido (todas as tentativas). Sem ele, 4 tentativas de 60 s
+        # prenderiam uma thread por minutos: numa API publica isso e uma forma de derruba-la.
+        self._max_total = max_total_seconds
+        self._clock = clock
 
     def __repr__(self) -> str:
         return "GeminiHttp()"
 
     def post(self, path: str, payload: Mapping[str, object]) -> dict[str, Any]:
         """POST com espera crescente (1, 2, 4, 8 s) so para erros temporarios."""
+        started = self._clock()
         for attempt in range(self._max_retries + 1):
             try:
                 response = self._client.post(
@@ -54,5 +61,8 @@ class GeminiHttp:
                     detail = response.text.replace(self._api_key, "<chave>")[:200]
                     status = response.status_code
                     raise GeminiError(f"Gemini respondeu HTTP {status}: {detail}")
-            self._sleep(2.0**attempt)
+            wait = 2.0**attempt  # 1s, 2s, 4s, 8s
+            if self._max_total is not None and self._clock() - started + wait > self._max_total:
+                raise GeminiError("Tempo limite esgotado ao chamar o Gemini")
+            self._sleep(wait)
         raise GeminiError("Tentativas esgotadas")  # inalcancavel; satisfaz o mypy
