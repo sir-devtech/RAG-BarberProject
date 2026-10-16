@@ -97,3 +97,7 @@ Comece pelo [guia de estudo e qualidade](docs/GUIA_DE_ESTUDO_E_QUALIDADE.md): ma
 ## Stack
 
 Python 3.12 · FastAPI · Gemini API (nível gratuito) · NumPy · httpx · pytest · ruff · mypy (estrito) · Docker · GitHub Actions
+
+## Licença
+
+[MIT](LICENSE): pode usar, copiar e modificar, mantendo o aviso de copyright. O software é fornecido sem garantia.
