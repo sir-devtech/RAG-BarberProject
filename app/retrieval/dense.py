@@ -3,18 +3,14 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
 
 import numpy as np
 
 from app.ingest.chunking import Chunk
 from app.ingest.embeddings import Matrix
+from app.retrieval.hit import Hit
 
-
-@dataclass(frozen=True)
-class Hit:
-    chunk: Chunk
-    score: float  # cosseno: 1 = mesmo sentido, perto de 0 = sem relacao
+__all__ = ["DenseIndex", "Hit"]
 
 
 class DenseIndex:

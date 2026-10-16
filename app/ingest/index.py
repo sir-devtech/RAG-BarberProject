@@ -2,12 +2,25 @@
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Sequence
 
 import numpy as np
 
 from app.ingest.chunking import Chunk
 from app.ingest.embeddings import EmbeddingCache, GeminiEmbedder, Matrix
+
+
+def cached_query_vector(embedder: GeminiEmbedder, cache: EmbeddingCache, text: str) -> Matrix:
+    """Vetor da pergunta, reaproveitado do cache quando a mesma pergunta se repete."""
+    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+    key = EmbeddingCache.key(embedder.model, embedder.dimensions, f"q-{digest}")
+    cached = cache.get(key)
+    if cached is not None:
+        return np.array([cached], dtype=np.float32)
+    vector = embedder.embed_query(text)
+    cache.put(key, vector[0].tolist())
+    return vector
 
 
 def embed_chunks(

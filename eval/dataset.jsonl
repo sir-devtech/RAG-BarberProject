@@ -1,0 +1,25 @@
+{"question": "quanto custa para 3 barbeiros?", "tenant": "platform", "relevant": ["Planos e preços do Sir Barber > Simples Pequena"]}
+{"question": "quanto custa para 5 barbeiros?", "tenant": "platform", "relevant": ["Planos e preços do Sir Barber > Simples Média"], "note": "exige conta (faixa 4 a 8): caso para ferramenta"}
+{"question": "R$ 250", "tenant": "platform", "relevant": ["Planos e preços do Sir Barber > Simples Média"]}
+{"question": "quanto é o plano de R$ 350?", "tenant": "platform", "relevant": ["Planos e preços do Sir Barber > Simples Grande"]}
+{"question": "posso desmarcar quando quiser?", "tenant": "platform", "relevant": ["Perguntas frequentes > Posso cancelar?", "Teste grátis e cancelamento > Cancelamento"]}
+{"question": "tem multa se eu sair?", "tenant": "platform", "relevant": ["Perguntas frequentes > Posso cancelar?", "Teste grátis e cancelamento > Cancelamento"]}
+{"question": "o pix libera o teste grátis?", "tenant": "platform", "relevant": ["Teste grátis e cancelamento > Pagamento por Pix e o teste", "Perguntas frequentes > Preciso de cartão para testar?"]}
+{"question": "preciso de cartão para testar?", "tenant": "platform", "relevant": ["Perguntas frequentes > Preciso de cartão para testar?", "Teste grátis e cancelamento > Teste grátis de 15 dias"]}
+{"question": "qual plano tem WhatsApp?", "tenant": "platform", "relevant": ["Planos e preços do Sir Barber > Plano Completo"]}
+{"question": "quanto custa o Premium?", "tenant": "platform", "relevant": ["Planos e preços do Sir Barber > Plano Premium"]}
+{"question": "como o cliente marca horário?", "tenant": "platform", "relevant": ["Perguntas frequentes > Como meus clientes agendam?", "O que o Sir Barber oferece > Agendamento pelo celular"]}
+{"question": "dá para usar sozinho, sem equipe?", "tenant": "platform", "relevant": ["Perguntas frequentes > Funciona para quem trabalha sozinho?", "Teste grátis e cancelamento > Quem trabalha sozinho", "Planos e preços do Sir Barber > Simples Solo"]}
+{"question": "vocês têm clube de assinatura para os clientes?", "tenant": "platform", "relevant": ["O que o Sir Barber oferece > Clube de assinatura", "Planos e preços do Sir Barber > Plano Completo"]}
+{"question": "como vejo quanto entrou no dia?", "tenant": "platform", "relevant": ["O que o Sir Barber oferece > Financeiro do dia"]}
+{"question": "o dono é avisado quando entra um horário?", "tenant": "platform", "relevant": ["O que o Sir Barber oferece > Lembretes automáticos"]}
+{"question": "quantos barbeiros cabem no Simples Grande?", "tenant": "platform", "relevant": ["Planos e preços do Sir Barber > Simples Grande"]}
+{"question": "o que inclui o plano Completo?", "tenant": "platform", "relevant": ["Planos e preços do Sir Barber > Plano Completo"]}
+{"question": "quais são os passos para começar?", "tenant": "platform", "relevant": ["O que o Sir Barber oferece > Como começar"]}
+{"question": "tem controle de inadimplência?", "tenant": "platform", "relevant": ["Planos e preços do Sir Barber > Plano Completo"]}
+{"question": "dá pra desistir sem pagar nada?", "tenant": "platform", "relevant": ["Perguntas frequentes > Posso cancelar?", "Teste grátis e cancelamento > Cancelamento"], "note": "parafrase: nenhuma palavra em comum"}
+{"question": "meu cartão vai ser cobrado de cara?", "tenant": "platform", "relevant": ["Perguntas frequentes > Preciso de cartão para testar?", "Teste grátis e cancelamento > Teste grátis de 15 dias"], "note": "parafrase"}
+{"question": "qual o valor mais barato para começar?", "tenant": "platform", "relevant": ["Planos e preços do Sir Barber > Simples Solo", "Perguntas frequentes > Funciona para quem trabalha sozinho?", "Teste grátis e cancelamento > Quem trabalha sozinho"], "note": "parafrase"}
+{"question": "serve para uma rede com várias unidades?", "tenant": "platform", "relevant": ["Planos e preços do Sir Barber > Plano Premium"], "note": "parafrase"}
+{"question": "meus clientes podem pagar mensalidade e voltar todo mês?", "tenant": "platform", "relevant": ["O que o Sir Barber oferece > Clube de assinatura", "Planos e preços do Sir Barber > Plano Completo"], "note": "parafrase"}
+{"question": "como faço para os clientes instalarem no celular?", "tenant": "platform", "relevant": ["O que o Sir Barber oferece > App com a cara da barbearia"], "note": "parafrase"}
