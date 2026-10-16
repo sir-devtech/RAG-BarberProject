@@ -1,0 +1,33 @@
+# Uso local ou no servidor:  docker compose up -d --build
+# A chave vem do arquivo .env (que NAO esta no git); nada de segredo neste arquivo.
+services:
+  assistente:
+    build: .
+    image: rag-barberproject:local
+    env_file: .env
+    environment:
+      # Limites e rede: valores explicitos para ninguem depender de padrao escondido.
+      ALLOWED_TENANTS: platform
+      RATE_PER_MINUTE: "6"
+      RATE_PER_DAY: "60"
+      DAILY_CAP: "400"
+    # Publica SO em localhost: quem expoe para a internet e um proxy reverso (decisao da etapa 10).
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - assistente-data:/data
+    restart: unless-stopped
+    # Endurecimento do container
+    read_only: true              # sistema de arquivos so leitura (so /data e /tmp gravam)
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL                      # sem nenhuma capability de Linux
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 384m
+    cpus: 0.5
+    pids_limit: 128
+
+volumes:
+  assistente-data:
