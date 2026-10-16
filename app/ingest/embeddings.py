@@ -8,22 +8,22 @@ from __future__ import annotations
 
 import json
 import time
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 import httpx
 import numpy as np
 from numpy.typing import NDArray
 
-API_BASE = "https://generativelanguage.googleapis.com/v1beta"
-RETRY_STATUS = {429, 500, 502, 503, 504}  # limite de cota ou servidor sobrecarregado
-BATCH_SIZE = 100  # maximo de textos por chamada em batchEmbedContents
+from app.gemini import GeminiError, GeminiHttp
 
 Matrix = NDArray[np.float32]
 
 
-class EmbeddingError(RuntimeError):
-    """Falha ao gerar embeddings (a mensagem nunca contem a chave)."""
+BATCH_SIZE = 100  # maximo de textos por chamada em batchEmbedContents
+
+# Mantido por compatibilidade: erros de embedding sao erros do Gemini.
+EmbeddingError = GeminiError
 
 
 def normalize(matrix: Matrix) -> Matrix:
@@ -44,12 +44,9 @@ class GeminiEmbedder:
         max_retries: int = 4,
         sleep: Callable[[float], None] = time.sleep,
     ) -> None:
-        self._api_key = api_key
+        self._http = GeminiHttp(api_key, client=client, max_retries=max_retries, sleep=sleep)
         self.model = model
         self.dimensions = dimensions
-        self._client = client or httpx.Client(timeout=30.0)
-        self._max_retries = max_retries
-        self._sleep = sleep
 
     def __repr__(self) -> str:
         return f"GeminiEmbedder(model={self.model!r}, dimensions={self.dimensions})"
@@ -79,37 +76,13 @@ class GeminiEmbedder:
                     for text in batch
                 ]
             }
-            data = self._post(f"/models/{self.model}:batchEmbedContents", payload)
+            data = self._http.post(f"/models/{self.model}:batchEmbedContents", payload)
             embeddings = data.get("embeddings", [])
             if len(embeddings) != len(batch):
                 raise EmbeddingError("Gemini devolveu quantidade de vetores diferente da enviada")
             rows.extend(item["values"] for item in embeddings)
         # Com dimensoes menores que o padrao a API nao normaliza; fazemos aqui.
         return normalize(np.array(rows, dtype=np.float32))
-
-    def _post(
-        self, path: str, payload: Mapping[str, object]
-    ) -> dict[str, list[dict[str, list[float]]]]:
-        for attempt in range(self._max_retries + 1):
-            try:
-                response = self._client.post(
-                    f"{API_BASE}{path}",
-                    json=payload,
-                    headers={"x-goog-api-key": self._api_key},  # no cabecalho, nunca na URL
-                )
-            except httpx.TransportError as exc:
-                if attempt == self._max_retries:
-                    nome = type(exc).__name__
-                    raise EmbeddingError(f"Falha de rede ao chamar o Gemini: {nome}") from None
-            else:
-                if response.status_code == 200:
-                    return response.json()  # type: ignore[no-any-return]
-                if response.status_code not in RETRY_STATUS or attempt == self._max_retries:
-                    detail = response.text.replace(self._api_key, "<chave>")[:200]
-                    status = response.status_code
-                    raise EmbeddingError(f"Gemini respondeu HTTP {status}: {detail}")
-            self._sleep(2.0**attempt)  # 1s, 2s, 4s, 8s
-        raise EmbeddingError("Tentativas esgotadas")  # inalcancavel; satisfaz o mypy
 
 
 class EmbeddingCache:
