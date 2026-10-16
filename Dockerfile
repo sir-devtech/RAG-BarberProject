@@ -1,5 +1,7 @@
 # Imagem do assistente. Decisoes de seguranca estao comentadas junto de cada linha.
-FROM python:3.12-slim
+# A base e fixada pelo digest: o mesmo build gera a mesma imagem, e uma tag nao pode ser trocada
+# por outra sem voce perceber. Para atualizar: docker buildx imagetools inspect python:3.12-slim
+FROM python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
 
 # Sem .pyc e sem buffer de saida (logs aparecem na hora). PYTHONPATH porque o codigo e
 # copiado, nao instalado como pacote: o app acha a pasta knowledge/ pelo caminho do arquivo.

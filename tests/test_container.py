@@ -71,6 +71,34 @@ def test_compose_endurece_o_container() -> None:
         assert limite in SERVICE
 
 
+def test_dockerfile_comeca_por_uma_base_fixada_por_digest() -> None:
+    primeira = next(
+        line for line in DOCKERFILE.splitlines() if line.strip() and not line.startswith("#")
+    )
+    assert re.fullmatch(r"FROM python:\d+\.\d+-slim@sha256:[0-9a-f]{64}", primeira), primeira
+
+
+def test_container_nao_toca_no_computador_alem_do_listado() -> None:
+    """Regras de isolamento do host. Se alguem afrouxar uma, o CI avisa."""
+    configured = yaml.safe_dump(SERVICE)  # ja sem comentarios: so o que de fato vale
+    assert SERVICE.get("privileged") is False
+    for proibido in ["network_mode", "pid", "ipc", "devices", "cap_add", "extra_hosts"]:
+        assert proibido not in SERVICE, proibido
+    assert "docker.sock" not in configured
+    for volume in SERVICE["volumes"]:  # so volume NOMEADO; caminho do PC (./x, C:\x, /x) e proibido
+        origem = str(volume).split(":")[0]
+        assert re.fullmatch(r"[a-z][a-z0-9_-]*", origem), f"bind mount proibido: {volume}"
+        assert origem in COMPOSE["volumes"]
+
+
+def test_container_nao_volta_sozinho_e_nao_enche_o_disco() -> None:
+    assert SERVICE["restart"] in ("no", False)  # o servidor liga isso por override, nunca o padrao
+    options = SERVICE["logging"]["options"]
+    assert options["max-size"] and options["max-file"]  # logs com teto
+    assert SERVICE["memswap_limit"] == SERVICE["mem_limit"]  # sem swap
+    assert "noexec" in SERVICE["tmpfs"][0] and "size=" in SERVICE["tmpfs"][0]
+
+
 def test_compose_so_publica_em_localhost() -> None:
     for port in SERVICE["ports"]:
         assert str(port).startswith("127.0.0.1:"), port

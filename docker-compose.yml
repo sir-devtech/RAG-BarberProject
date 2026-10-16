@@ -1,9 +1,16 @@
-# Uso local ou no servidor:  docker compose up -d --build
+# Uso local:  docker compose up -d --build     Limpeza total:  docker compose down -v --rmi local
 # A chave vem do arquivo .env (que NAO esta no git); nada de segredo neste arquivo.
+#
+# Principio: este container nao pode tocar no seu computador alem do que esta listado aqui.
+#   - nenhuma pasta sua e montada (so um volume NOMEADO do Docker, com vetores de texto publico)
+#   - nao e privilegiado, nao usa a rede nem os processos do host, nao ve o docker.sock
+#   - nao volta sozinho quando o Docker abre (restart: "no"); o servidor liga isso por override
+#   - memoria, CPU, processos, disco temporario e LOGS tem teto
 services:
   assistente:
     build: .
     image: rag-barberproject:local
+    user: "10001:999"
     env_file: .env
     environment:
       # Limites e rede: valores explicitos para ninguem depender de padrao escondido.
@@ -15,19 +22,31 @@ services:
     ports:
       - "127.0.0.1:8000:8000"
     volumes:
-      - assistente-data:/data
-    restart: unless-stopped
-    # Endurecimento do container
+      - assistente-data:/data    # volume nomeado: nunca um caminho do seu computador
+    restart: "no"                # local: parou, parou. No servidor: docker-compose.server.yml
+    stop_grace_period: 10s
+    # Endurecimento
     read_only: true              # sistema de arquivos so leitura (so /data e /tmp gravam)
     tmpfs:
-      - /tmp
+      - /tmp:size=16m,noexec,nosuid,nodev
     cap_drop:
       - ALL                      # sem nenhuma capability de Linux
     security_opt:
       - no-new-privileges:true
+    privileged: false
+    # Tetos de recurso
     mem_limit: 384m
+    memswap_limit: 384m          # igual a memoria: sem swap (nao cresce usando o disco)
     cpus: 0.5
     pids_limit: 128
+    ulimits:
+      nofile: {soft: 1024, hard: 1024}
+    # Logs com teto: sem isto o disco pode encher aos poucos, sem aviso
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
 
 volumes:
   assistente-data:

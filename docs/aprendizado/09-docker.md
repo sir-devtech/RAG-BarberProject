@@ -20,6 +20,7 @@ Tudo que entra na imagem pode acabar num registry ou em outra máquina. Por isso
 | `read_only`, `cap_drop: ALL`, `no-new-privileges` | reduz o que um invasor consegue fazer |
 | `mem_limit`, `cpus`, `pids_limit` | um pedido malicioso não derruba o servidor inteiro (o droplet divide recursos com o Multi) |
 | porta publicada só em `127.0.0.1` | expor para a internet é decisão consciente, via proxy reverso |
+| base fixada por digest | o mesmo build gera a mesma imagem; uma tag não pode ser trocada sem você ver |
 | `HEALTHCHECK` | o Docker reinicia o container se `/health` parar de responder |
 | comando `python -m app.api.serve` | sobe com `proxy_headers=False` (ver caderno 08) |
 
@@ -44,6 +45,25 @@ Escrevi no `.dockerignore` a linha `*.md` para não levar o README. Mas a base d
 - [x] O container não alcança a porta 5432 do host (os bancos do Multi ficam isolados).
 
 **Observação sobre o IP:** neste teste todos os pedidos chegam ao container com o mesmo IP (o do gateway do Docker), então o limite vale para o conjunto. É exatamente o risco descrito acima, e é por isso que a etapa 10 precisa de `CLIENT_IP_HEADER`.
+
+## O container não pode "contaminar" o seu computador
+Pedido do dono do projeto, que já teve container deixando lixo e rodando em segundo plano. O que o compose garante (cada item tem teste em `tests/test_container.py`):
+
+| risco no seu PC | o que impede |
+|---|---|
+| voltar sozinho toda vez que o Docker abre | `restart: "no"` (o servidor liga isso por override, nunca o padrão) |
+| ler ou apagar arquivos seus | **nenhuma pasta do PC é montada**; só um volume nomeado do Docker, com vetores de texto público |
+| controlar o Docker ou a máquina | sem `privileged`, sem `docker.sock`, sem rede nem processos do host, sem `cap_add` |
+| escalar privilégio | usuário não-root, `cap_drop: ALL`, `no-new-privileges` |
+| encher o disco aos poucos | logs com teto (5 MB × 3), `/tmp` de 16 MB, sem swap |
+| comer memória, CPU ou processos | 384 MB, 0,5 CPU, 128 processos |
+| executar algo baixado em `/tmp` | `/tmp` montado com `noexec` |
+| mudar sozinha com uma tag nova | imagem base **fixada pelo digest** |
+| alcançar os seus bancos (porta 5432) | verificado: a porta não é alcançável |
+
+**Limpeza total do que o projeto cria**, em um comando: `docker compose down -v` (container, rede e volume) e `docker image rm rag-barberproject:local` (a imagem). Verificado depois de cada teste: zero containers, volumes, redes e imagens do projeto.
+
+**O que continua possível** (diga isto você mesmo antes que perguntem): o container **pode abrir conexões de saída** para a internet, porque precisa falar com o Gemini. Limitar isso a um único endereço exigiria regras de firewall que o compose sozinho não faz. Risco baixo, porque nenhum texto do usuário vira endereço de rede, mas não é zero.
 
 ## Como explicar na entrevista (2 frases)
 "Empacotei a API sem a chave dentro da imagem, com usuário sem privilégios, sistema de arquivos só leitura, sem capabilities e com limites de recurso, publicando só em localhost. E escrevi testes que verificam a imagem sem precisar do Docker, porque descobri que um padrão errado no `.dockerignore` poderia deixar a base de conhecimento de fora."

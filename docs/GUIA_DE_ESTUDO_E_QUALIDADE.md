@@ -41,6 +41,16 @@ python scripts\check_secrets.py                        # segredos e dados pessoa
 .venv\Scripts\python -m eval.run_answers --record      # regrava o cassete (usa a chave e a cota)
 ```
 
+## 2b. Docker: usar e limpar sem deixar rastro
+
+```bash
+docker compose up -d --build        # sobe (publica so em 127.0.0.1:8000; nao reinicia sozinho)
+docker compose down -v              # desliga e apaga container, rede e volume do projeto
+docker image rm rag-barberproject:local   # apaga a imagem (se refaz em segundos)
+```
+
+O compose nunca monta pastas do seu computador. Esses comandos so mexem em coisas com o nome deste projeto.
+
 ## 3. Checklist de qualidade (antes de mesclar qualquer PR)
 
 - [ ] `pytest`, `ruff` e `mypy` verdes (o CI repete isso).
