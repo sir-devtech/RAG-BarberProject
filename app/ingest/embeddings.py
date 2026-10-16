@@ -10,6 +10,7 @@ import json
 import time
 from collections.abc import Callable, Sequence
 from pathlib import Path
+from typing import Protocol
 
 import httpx
 import numpy as np
@@ -24,6 +25,17 @@ BATCH_SIZE = 100  # maximo de textos por chamada em batchEmbedContents
 
 # Mantido por compatibilidade: erros de embedding sao erros do Gemini.
 EmbeddingError = GeminiError
+
+
+class Embedder(Protocol):
+    """Contrato de quem gera embeddings: o real (Gemini) e o de reproducao (cassete)."""
+
+    model: str
+    dimensions: int
+
+    def embed_documents(self, texts: Sequence[str]) -> Matrix: ...
+
+    def embed_query(self, text: str) -> Matrix: ...
 
 
 def normalize(matrix: Matrix) -> Matrix:
@@ -88,10 +100,11 @@ class GeminiEmbedder:
 class EmbeddingCache:
     """Guarda vetores em disco, indexados por modelo + dimensoes + hash do texto."""
 
-    def __init__(self, path: Path) -> None:
+    def __init__(self, path: Path | None, data: dict[str, list[float]] | None = None) -> None:
+        """`path=None` mantem tudo em memoria (usado na gravacao e na reproducao de cassetes)."""
         self._path = path
-        self._data: dict[str, list[float]] = {}
-        if path.is_file():
+        self._data: dict[str, list[float]] = dict(data or {})
+        if path is not None and path.is_file():
             self._data = json.loads(path.read_text(encoding="utf-8"))
 
     @staticmethod
@@ -104,7 +117,12 @@ class EmbeddingCache:
     def put(self, key: str, vector: list[float]) -> None:
         self._data[key] = vector
 
+    def export(self) -> dict[str, list[float]]:
+        return dict(self._data)
+
     def save(self) -> None:
+        if self._path is None:
+            return
         self._path.parent.mkdir(parents=True, exist_ok=True)
         tmp = self._path.with_suffix(".tmp")
         tmp.write_text(json.dumps(self._data), encoding="utf-8")

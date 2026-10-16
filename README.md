@@ -3,7 +3,7 @@
 Assistente em Python que responde dúvidas de clientes de barbearias do **Sir Barber**
 (SaaS multi-loja de agendamento), usando RAG com Gemini em nível gratuito.
 
-> **Status:** em construção, etapa 6 de 10 (fidelidade numérica e ferramenta de planos).
+> **Status:** em construção, etapa 7 de 10 (avaliação de respostas e gate de qualidade).
 
 ## O que o projeto vai ter
 
@@ -29,4 +29,6 @@ Nenhuma chave, dado de cliente ou endereço de servidor entra aqui. Três barrei
 hook de pre-commit (`scripts/check_secrets.py`), CI com gitleaks no histórico inteiro
 e o *push protection* do GitHub.
 
-O passo a passo do que foi feito e por quê está em [`docs/aprendizado`](docs/aprendizado).
+Para **estudar** e para **conferir a qualidade** antes de mudar algo, comece pelo
+[`guia de estudo e qualidade`](docs/GUIA_DE_ESTUDO_E_QUALIDADE.md). O passo a passo detalhado de
+cada etapa está em [`docs/aprendizado`](docs/aprendizado).

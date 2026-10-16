@@ -55,3 +55,10 @@ def test_bloqueia_arquivo_de_segredo_pelo_nome() -> None:
     for name in [".env", "config/.env.local", "servidor.pem", "id_" + "ed25519"]:
         assert scan_file(Path(name))[0].kind == "arquivo de segredo", name
     assert scan_file(Path(".env.example")) == []
+
+
+def test_detecta_referencia_ao_repositorio_privado() -> None:
+    privado = "server/" + "lib/saas-" + "plans.ts"
+    assert "referencia ao repositorio privado" in kinds(f"valores vem de {privado}")
+    assert "referencia ao repositorio privado" in kinds("repo " + "SirBarber-" + "Multi")
+    assert kinds("a rota publica /saas/plans lista os planos") == set()

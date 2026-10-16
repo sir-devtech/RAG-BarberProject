@@ -8,10 +8,10 @@ from collections.abc import Sequence
 import numpy as np
 
 from app.ingest.chunking import Chunk
-from app.ingest.embeddings import EmbeddingCache, GeminiEmbedder, Matrix
+from app.ingest.embeddings import Embedder, EmbeddingCache, Matrix
 
 
-def cached_query_vector(embedder: GeminiEmbedder, cache: EmbeddingCache, text: str) -> Matrix:
+def cached_query_vector(embedder: Embedder, cache: EmbeddingCache, text: str) -> Matrix:
     """Vetor da pergunta, reaproveitado do cache quando a mesma pergunta se repete."""
     digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
     key = EmbeddingCache.key(embedder.model, embedder.dimensions, f"q-{digest}")
@@ -24,7 +24,7 @@ def cached_query_vector(embedder: GeminiEmbedder, cache: EmbeddingCache, text: s
 
 
 def embed_chunks(
-    chunks: Sequence[Chunk], embedder: GeminiEmbedder, cache: EmbeddingCache
+    chunks: Sequence[Chunk], embedder: Embedder, cache: EmbeddingCache
 ) -> Matrix:
     """Devolve uma matriz (chunks x dimensoes). So chama a API para textos novos ou alterados."""
     keys = [

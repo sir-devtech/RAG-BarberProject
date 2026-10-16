@@ -1,0 +1,7 @@
+{
+  "_comentario": "Piso de qualidade do gate de CI. Subir quando melhorar; baixar so com justificativa no PR. Falha conhecida: v20 (docs/aprendizado/07).",
+  "tuning": {"min_passed": 20, "of": 20},
+  "validation": {"min_passed": 25, "of": 26},
+  "max_false_answers": 0,
+  "max_uncited_numbers": 0
+}
