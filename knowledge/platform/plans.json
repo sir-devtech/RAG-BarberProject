@@ -1,0 +1,8 @@
+[
+  {"id": "basic_1", "name": "Simples Solo", "price": 120, "min_barbers": 1, "max_barbers": 1, "asaas": false, "price_is_minimum": false},
+  {"id": "basic_3", "name": "Simples Pequena", "price": 160, "min_barbers": 2, "max_barbers": 3, "asaas": false, "price_is_minimum": false},
+  {"id": "basic_8", "name": "Simples Média", "price": 250, "min_barbers": 4, "max_barbers": 8, "asaas": false, "price_is_minimum": false},
+  {"id": "basic_12", "name": "Simples Grande", "price": 350, "min_barbers": 9, "max_barbers": 12, "asaas": false, "price_is_minimum": false},
+  {"id": "complete", "name": "Completo", "price": 329, "min_barbers": 1, "max_barbers": 8, "asaas": true, "price_is_minimum": true},
+  {"id": "premium", "name": "Premium", "price": 650, "min_barbers": 8, "max_barbers": 12, "asaas": true, "price_is_minimum": true}
+]
