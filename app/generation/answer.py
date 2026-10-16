@@ -34,6 +34,7 @@ class Source:
     number: int
     source: str
     heading: str
+    text: str = ""  # texto do trecho citado (usado pela avaliacao para checar a resposta)
 
 
 @dataclass(frozen=True)
@@ -44,10 +45,11 @@ class Answer:
     # ok | sem_contexto | baixa_similaridade | modelo_insuficiente | sem_fonte
     # | numero_nao_fundamentado
     reason: str
+    corrections: int = 0  # quantas vezes o modelo precisou corrigir numeros inventados
 
 
-def refuse(reason: str) -> Answer:
-    return Answer(text=REFUSAL, sources=[], grounded=False, reason=reason)
+def refuse(reason: str, corrections: int = 0) -> Answer:
+    return Answer(text=REFUSAL, sources=[], grounded=False, reason=reason, corrections=corrections)
 
 
 def _valid_sources(raw: object, hits: list[Hit]) -> list[Source]:
@@ -57,7 +59,7 @@ def _valid_sources(raw: object, hits: list[Hit]) -> list[Source]:
     for number in dict.fromkeys(n for n in numbers if isinstance(n, int)):
         if 1 <= number <= len(hits):
             chunk = hits[number - 1].chunk
-            chosen.append(Source(number, chunk.source, chunk.heading))
+            chosen.append(Source(number, chunk.source, chunk.heading, chunk.text))
     return chosen
 
 
@@ -98,16 +100,18 @@ def answer_question(
     result = chat.generate_json(SYSTEM_PROMPT, prompt, RESPONSE_SCHEMA)
     for attempt in range(2):  # 1a resposta + no maximo 1 correcao
         if result.get("suficiente") is not True:
-            return refuse("modelo_insuficiente")
+            return refuse("modelo_insuficiente", attempt)
         text = str(result.get("resposta", "")).strip()
         sources = _valid_sources(result.get("fontes"), hits)
         if not text or not sources:
-            return refuse("sem_fonte")  # resposta sem fonte valida nao e confiavel
+            return refuse("sem_fonte", attempt)  # resposta sem fonte valida nao e confiavel
         invented = ungrounded_numbers(text, context, [question])
         if not invented:
-            return Answer(text=text, sources=sources, grounded=True, reason="ok")
+            return Answer(
+                text=text, sources=sources, grounded=True, reason="ok", corrections=attempt
+            )
         if attempt == 0:
             result = chat.generate_json(
                 SYSTEM_PROMPT, prompt + _correction_note(invented), RESPONSE_SCHEMA
             )
-    return refuse("numero_nao_fundamentado")
+    return refuse("numero_nao_fundamentado", 1)

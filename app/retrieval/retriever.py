@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from app.ingest.embeddings import EmbeddingCache, GeminiEmbedder
+from app.ingest.embeddings import Embedder, EmbeddingCache
 from app.ingest.index import cached_query_vector
 from app.retrieval.bm25 import Bm25Index
 from app.retrieval.dense import DenseIndex
@@ -27,7 +27,7 @@ class Retriever:
         self,
         dense: DenseIndex,
         bm25: Bm25Index,
-        embedder: GeminiEmbedder,
+        embedder: Embedder,
         cache: EmbeddingCache,
     ) -> None:
         self._dense = dense
