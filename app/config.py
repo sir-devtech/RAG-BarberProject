@@ -4,10 +4,27 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
+
+ENV_FILE = Path(__file__).resolve().parents[1] / ".env"
 
 
 class MissingSettingError(RuntimeError):
     """Variavel de ambiente obrigatoria ausente."""
+
+
+def read_env_file(path: Path) -> dict[str, str]:
+    """Le um arquivo .env simples (NOME=valor). Linhas vazias e # sao ignoradas."""
+    values: dict[str, str] = {}
+    if not path.is_file():
+        return values
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        name, value = line.split("=", 1)
+        values[name.strip()] = value.strip().strip("\"'")
+    return values
 
 
 @dataclass(frozen=True)
@@ -15,6 +32,11 @@ class Settings:
     gemini_api_key: str
     chat_model: str
     embedding_model: str
+
+    @classmethod
+    def load(cls, env_file: Path = ENV_FILE) -> Settings:
+        """Arquivo .env primeiro; variaveis do ambiente (ex.: servidor, CI) tem prioridade."""
+        return cls.from_env({**read_env_file(env_file), **os.environ})
 
     @classmethod
     def from_env(cls, env: dict[str, str] | None = None) -> Settings:

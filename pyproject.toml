@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Assistente RAG multi-loja para o Sir Barber (busca hibrida, ferramentas e avaliacao)."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = ["httpx>=0.27", "numpy>=2"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.8", "mypy>=1.13"]
