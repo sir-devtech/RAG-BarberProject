@@ -1,0 +1,21 @@
+# Segredos — NUNCA versionar
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Gerados (podem ser refeitos com scripts/build_index.py)
+.index/
+*.npz
+*.egg-info/
+build/
+dist/
