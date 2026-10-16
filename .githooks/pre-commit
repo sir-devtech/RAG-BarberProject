@@ -1,0 +1,6 @@
+#!/bin/sh
+# Ativar uma vez por clone: git config core.hooksPath .githooks
+python scripts/check_secrets.py --staged || {
+  echo "Commit bloqueado: repositorio publico, nada de segredo ou dado pessoal."
+  exit 1
+}
