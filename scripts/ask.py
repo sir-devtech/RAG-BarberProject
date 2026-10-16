@@ -19,6 +19,7 @@ from app.ingest.loader import load_tenant_chunks
 from app.retrieval.bm25 import Bm25Index
 from app.retrieval.dense import DenseIndex
 from app.retrieval.retriever import Retriever
+from app.tools.plans import PlansTool, load_plans
 
 CACHE_FILE = Path(__file__).resolve().parents[1] / ".index" / "embeddings.json"
 
@@ -38,6 +39,7 @@ def main() -> None:
     dense = DenseIndex(chunks, embed_chunks(chunks, embedder, cache))
     retriever = Retriever(dense, Bm25Index(chunks), embedder, cache)
     chat = GeminiChat(settings.gemini_api_key, settings.chat_model)
+    tools = PlansTool(load_plans())
 
     for question in args.questions:
         print(f"\nPERGUNTA: {question}")
@@ -46,7 +48,7 @@ def main() -> None:
             print(f"  [melhor similaridade: {found.best_similarity:.3f}]")
             for number, hit in enumerate(found.hits, start=1):
                 print(f"  [trecho {number}] {hit.chunk.heading}")
-        result = answer_question(question, args.tenant, retriever, chat)
+        result = answer_question(question, args.tenant, retriever, chat, tools=tools)
         print(f"RESPOSTA ({result.reason}): {result.text}")
         for source in result.sources:
             print(f"  fonte [{source.number}] {source.source} > {source.heading}")
